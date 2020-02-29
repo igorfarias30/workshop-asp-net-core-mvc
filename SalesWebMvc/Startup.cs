@@ -37,23 +37,26 @@ namespace SalesWebMvc
 
             services.AddDbContext<SalesWebMvcContext>(options =>
                     options.UseSqlServer(Configuration.GetConnectionString("SalesWebMvcContext")));
-
-            // dependency injection
-            services.AddScoped<SeedingService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env, SeedingService seedingService)
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env, SalesWebMvcContext ctx)
         {
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
-                seedingService.Seed();
             }
             else
             {
                 app.UseExceptionHandler("/Home/Error");
                 app.UseHsts();
+            }
+
+            using (ctx)
+            {
+                ctx.Database.EnsureCreated();
+                var total = ctx.Department.Count();
+                Console.WriteLine(total);
             }
 
             app.UseHttpsRedirection();
